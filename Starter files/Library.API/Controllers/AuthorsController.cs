@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace Library.API.Controllers
 {
@@ -25,6 +26,11 @@ namespace Library.API.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Get All Authours in the DB
+        /// </summary>
+        /// <returns>A list of type Authors</returns>
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Author>>> GetAuthors()
         {
@@ -32,7 +38,15 @@ namespace Library.API.Controllers
             return Ok(_mapper.Map<IEnumerable<Author>>(authorsFromRepo));
         }
 
+        /// <summary>
+        /// get an Author by his/her id
+        /// </summary>
+        /// <param name="authorId">The Id of the author you want to get</param>
+        /// <returns> An author id,firstname and lastname fileds</returns>
         [HttpGet("{authorId}")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
         public async Task<ActionResult<Author>> GetAuthor(
             Guid authorId)
         {
@@ -46,6 +60,9 @@ namespace Library.API.Controllers
         }
 
         [HttpPut("{authorId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
         public async Task<ActionResult<Author>> UpdateAuthor(
             Guid authorId,
             AuthorForUpdate authorForUpdate)
@@ -66,7 +83,28 @@ namespace Library.API.Controllers
             return Ok(_mapper.Map<Author>(authorFromRepo)); 
         }
 
+        /// <summary>
+        ///  Partial update an author
+        /// </summary>
+        /// <param name="authorId">The id of the author you want to get</param>
+        /// <param name="patchDocument">The set of operations to apply to the author</param>
+        /// <returns>An ActionResult of ty[e Author</returns>
+        /// <remarks>
+        /// Sample request (this request updates the author's first name)\
+        /// PATCH/authors/id\
+        /// [\
+        ///     {\
+        ///         "opt":"replace",\
+        ///         "path":/firstname,\
+        ///         "value":"new first name"\
+        ///     }\
+        /// ]
+        /// </remarks>
         [HttpPatch("{authorId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary), StatusCodes.Status422UnprocessableEntity)]
+        [ProducesDefaultResponseType]
         public async Task<ActionResult<Author>> UpdateAuthor(
             Guid authorId,
             JsonPatchDocument<AuthorForUpdate> patchDocument)
